@@ -314,6 +314,7 @@ function SignUpScreen({ navigation }) {
 }
 
 function MainScreen() {
+  const [search, setSearch] = useState(0);
   const signOut = async () => {
    try{ 
     await firebase.auth().signOut();
@@ -328,33 +329,60 @@ function MainScreen() {
   return (
     <TabBar>
     <TabBar.Item
-        icon={require('./assets/tab2.png')}
-        selectedIcon={require('./assets/tab2.png')}
+        icon={require('./assets/tab1.png')}
+        selectedIcon={require('./assets/tab1.png')}
         title="Home"
     >
-     <View>
+        <View style={styles.textContent}>
+        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
+      <View style={styles.container}>
+        <View style={{ flex: 0.5 }}></View>
+        <View style={{ flex: 1, width: '90%', alignItems: 'center',}}>
+          <View style={styles.textborder}>
+              <TextInput
+                style={styles.textinput}
+                autoCapitalize='none'
+                autoCompleteType='off'
+                placeholder="Search"
+                keyboardType='ascii-capable'
+                onChangeText={(value) => setSearch(value)}
+                value={search}
+              /></View>
+        </View>
+        <View style={{ flex: 4, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <View style={{flex:1}}>
+            <View style></View>
+          </View>
+          <View style={{flex:1}}>
+          <Text>no</Text>
+          </View>
+          <View style={{flex:1}}>
+          <Text>no</Text>
+          </View>
+        </View>
         
-            <View>
-              <Text style={{fontSize: 25}}>Camera</Text>
-            </View>
-          
       </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView >
+        </View>
     </TabBar.Item>
     <TabBar.Item>
         <View style={styles.textContent}>
-            <Text style={{fontSize: 18}}>Camera</Text>
+        
         </View>
     </TabBar.Item>
     <TabBar.Item
         icon={require('./assets/tab3.png')}
         selectedIcon={require('./assets/tab3.png')}
-        title="Settings"
+        title="Me"
     >
         <View style={styles.textContent}>
-            <Text style={{fontSize: 18}}>Settings</Text>
+            <Text style={{fontSize: 18}}>Me</Text>
         </View>
   </TabBar.Item>
 </TabBar>
+    
   );
 }
 
