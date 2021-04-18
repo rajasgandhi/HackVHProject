@@ -8,13 +8,22 @@ import {
   View,
   TouchableOpacity,
   AsyncStorage,
+  Image,
 } from "react-native";
 //import { AsyncStorage } from "@react-native-community/async-storage";
 
-export default function CameraSucessScreen({image}) {
+export default function CameraSucessScreen({ image }) {
   return (
     <View style={styles.container}>
+      <Image
+        style={{ width: "90%", height: "90%" }}
+        source={{
+          uri: `data:image/jpg;base64,${image}`,
+        }}
+      />
+      <TouchableOpacity>
         <Text>HIsdogihnapognapgewnhpig</Text>
+      </TouchableOpacity>
     </View>
   );
 }

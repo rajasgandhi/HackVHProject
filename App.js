@@ -18,6 +18,7 @@ export default function App() {
   const [cameraRef, setCameraRef] = React.useState(null);
 
   const [pictureAdded, setPictureAdded] = React.useState(false);
+  const [mostRecentPicture, setMostRecentPicture] = React.useState(null);
 
   React.useEffect(() => {
     (async () => {
@@ -81,8 +82,6 @@ export default function App() {
         numkeywords: numAdded,
       };
 
-      //await AsyncStorage.setItem("notes", "");
-
       const notes = await AsyncStorage.getItem("notes");
       let note1 = JSON.parse(notes);
       if (!note1) {
@@ -109,6 +108,7 @@ export default function App() {
             text: "OK",
             onPress: () => {
               //console.log("Yes Pressed");
+              setMostRecentPicture(image.base64);
               setPictureAdded(true);
             },
           },
@@ -146,7 +146,9 @@ export default function App() {
   };
 
   if (pictureAdded) {
-    return <CameraSucessScreen />;
+    if (mostRecentPicture != null) {
+      return <CameraSucessScreen image={mostRecentPicture} />;
+    }
   }
 
   return (
