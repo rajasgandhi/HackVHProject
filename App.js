@@ -441,7 +441,6 @@ export default function App() {
           <Stack.Screen name="Sign Up" component={SignUpScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
-          <Stack.Screen name="Settings" component={SettingScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     );
