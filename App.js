@@ -108,7 +108,7 @@ export default function App() {
             text: "OK",
             onPress: () => {
               //console.log("Yes Pressed");
-              setMostRecentPicture(image.base64);
+              setMostRecentPicture(image);
               setPictureAdded(true);
             },
           },
@@ -166,8 +166,8 @@ export default function App() {
             borderWidth: 2,
             borderRadius: 50,
             borderColor: "white",
-            height: 50,
-            width: 50,
+            height: 60,
+            width: 60,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -179,8 +179,8 @@ export default function App() {
               borderWidth: 2,
               borderRadius: 50,
               borderColor: "white",
-              height: 40,
-              width: 40,
+              height: 50,
+              width: 50,
               backgroundColor: "black",
             }}
           ></View>
