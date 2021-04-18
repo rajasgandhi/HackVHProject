@@ -1,5 +1,4 @@
 import { StatusBar } from "expo-status-bar";
-import TabBar from 'react-native-nav-tabbar';
 import firebase from "firebase";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -310,19 +309,43 @@ function SignUpScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
+function CameraScreen({navigation})
+{
 
-function MainScreen() {
-  const [search, setSearch] = useState(0);
+}
+function AboutScreen({navigation})
+{
   const signOut = async () => {
-   try{ 
-    await firebase.auth().signOut();
-    navigation.navigate("Login");
-  }
-  catch({message})
-  {
-    alert(message);
-  }
-  };
+    try{ 
+     await firebase.auth().signOut();
+     navigation.navigate("Login");
+   }
+   catch({message})
+   {
+     alert(message);
+   }
+   };
+
+   return(
+     <View>
+      <View style = {{flex: 1}}></View>
+        <View style = {{flex: 1}}></View>
+          <TouchableOpacity style={styles.loginbutton}>
+            <Text
+              style={{ color: "#add8e6", fontSize: 40 }}
+              onPress={() => signOut()}
+            >
+              Sign Out
+            </Text>
+          </TouchableOpacity>
+        <View style = {{flex: 1}}></View>
+      </View>
+     
+   )
+}
+
+function HomeScreen({navigation}) {
+  const [search, setSearch] = useState(0);
   
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
@@ -408,7 +431,9 @@ function MainScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View style = {{flex: 1.2}}></View>
+            <View style = {{flex: 1.2}}>
+              /////////////
+            </View>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -442,7 +467,9 @@ export default function App() {
         <Stack.Navigator>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Sign Up" component={SignUpScreen} />
-          <Stack.Screen name="Launch" component={MainScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="About" component={AboutScreen} />
+          <Stack.Screen name="Camera" component={CameraScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     );
