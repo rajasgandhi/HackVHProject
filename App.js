@@ -2,18 +2,22 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Camera } from "expo-camera";
 import {
+  Alert,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   AsyncStorage,
 } from "react-native";
+import CameraSucessScreen from "./CameraSuccessScreen";
 //import { AsyncStorage } from "@react-native-community/async-storage";
 
 export default function App() {
   const [hasPermission, setHasPermission] = React.useState(false);
   const [cameraReady, setCameraReady] = React.useState(false);
   const [cameraRef, setCameraRef] = React.useState(null);
+
+  //const [notesAdded, setNotesAdded] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -94,8 +98,30 @@ export default function App() {
         });
 
       //console.log(await AsyncStorage.getItem("notes"));
-      alert("Notes Added!");
-      cameraRef.resumePreview();
+      //alert("Notes Added!");
+      Alert.alert(
+        "Notes Added!",
+        "Press OK or Cancel",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              console.log("Yes Pressed");
+              //return <CameraSucessScreen />;
+              //setNotesAdded(true);
+            },
+          },
+          {
+            text: "Cancel",
+            onPress: () => {
+              console.log("No Pressed");
+              cameraRef.resumePreview();
+            },
+            style: "cancel",
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (err) {
       console.warn(err);
     }
@@ -117,41 +143,51 @@ export default function App() {
     }
   };
 
+  //if (notesAdded) {
+  //return <CameraSucessScreen />;
+  //}
   return (
     <View style={styles.container}>
+      <View>
       <Camera
-        onCameraReady={() => setCameraReady(true)}
-        ref={(ref) => {
-          setCameraRef(ref);
-        }}
-        style={styles.camera}
-      ></Camera>
-      <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
-        <View
-          style={{
-            borderWidth: 2,
-            borderRadius: 50,
-            borderColor: "white",
-            height: 50,
-            width: 50,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "black",
+          onCameraReady={() => setCameraReady(true)}
+          ref={(ref) => {
+            setCameraRef(ref);
+            //cameraRef.resumePreview();
           }}
+          style={styles.camera}
+        ></Camera>
+
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={handleOnPress}
         >
           <View
             style={{
               borderWidth: 2,
               borderRadius: 50,
               borderColor: "white",
-              height: 40,
-              width: 40,
+              height: 50,
+              width: 50,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               backgroundColor: "black",
             }}
-          ></View>
-        </View>
-      </TouchableOpacity>
+          >
+            <View
+              style={{
+                borderWidth: 2,
+                borderRadius: 50,
+                borderColor: "white",
+                height: 40,
+                width: 40,
+                backgroundColor: "black",
+              }}
+            ></View>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
