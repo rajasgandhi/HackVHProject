@@ -16,26 +16,8 @@ import DropDownPicker from "react-native-dropdown-picker";
 import App from "./App";
 //import { AsyncStorage } from "@react-native-community/async-storage";
 
-export default function CameraSucessScreen({ image }) {
-  const [backPress, setBackPress] = useState(false);
-  const [finishPress, setFinishPress] = useState(false);
+export default function CameraSucessScreen({ image, navigation }) {
   const [selectedValue, setSelectedValue] = useState("English");
-  
-  const backPress1 = () => {
-    setBackPress(true);
-  };
-
-  const finishPress1 = () => {
-    setFinishPress(true);
-  };
-
-  if (backPress) {
-    return <App />;
-  }
-
-  if (finishPress) {
-    //TODO return < />;
-  }
 
   return (
     <View style={styles.container}>
@@ -45,7 +27,7 @@ export default function CameraSucessScreen({ image }) {
           //alignItems: "flex-start",
           //justifyContent: "center",
           marginLeft: 50,
-          marginTop: 100,
+          marginTop: 20,
         }}
       >
         <Text
@@ -135,14 +117,14 @@ export default function CameraSucessScreen({ image }) {
           position: "absolute",
           width: "100%",
           bottom: 0,
-          marginBottom: "15%",
+          marginBottom: "10%",
         }}
       >
-        <TouchableOpacity onPress={backPress1}>
+        <TouchableOpacity onPress={() => navigation.navigate("Camera")}>
           <Text style={{ fontSize: 20 }}>Back</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={{ marginLeft: 200 }} onPress={finishPress1}>
+        <TouchableOpacity style={{ marginLeft: 200 }} onPress={() => navigation.navigate("Home")}>
           <Text style={{ fontSize: 20 }}>Finish</Text>
         </TouchableOpacity>
       </View>

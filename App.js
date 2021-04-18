@@ -20,7 +20,7 @@ import {
 import { Camera } from "expo-camera";
 import AppLoading from "expo-app-loading";
 import { useFonts } from "expo-font";
-import CameraSucessScreen from "./CameraSuccessScreen";
+import CameraSuccessScreen from "./CameraSuccessScreen";
 
 const entireScreenHeight = Dimensions.get("window").height;
 const rem = entireScreenHeight / 380;
@@ -444,7 +444,7 @@ function CameraScreen({ navigation }) {
 
   if (pictureAdded) {
     if (mostRecentPicture != null) {
-      return <CameraSuccessScreen image={mostRecentPicture} />;
+      return <CameraSuccessScreen  image={mostRecentPicture} navigation={navigation} />;
     }
   }
   return (
@@ -452,11 +452,12 @@ function CameraScreen({ navigation }) {
         <Camera
           style={styles.camera}
           pictureSize="high"
-          onCameraReady={() => setCameraReady(true)}
+          type={Camera.Constants.Type.back}
+          onCameraReady={() => {setCameraReady(true)}}
           ref={(ref) => {
             setCameraRef(ref);
           }}
-        ></Camera>
+        />
       <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
         <View
           style={{
@@ -640,7 +641,7 @@ function HomeScreen({ navigation }) {
             </TouchableOpacity>
           </View>
           <View style={{ flex: 0.8 }}></View>
-          <View style={{ flex: 1.2, flexDirection: "row" }}>
+          <View style={{ flex: 1.2, flexDirection: "row", justifyContent: "center", bottom: 0, position: "absolute", width: "100%", alignContent: "center" }}>
             <TouchableOpacity
               style={styles.taskbarbutton}
               onPress={() => navigation.navigate("Camera")}
@@ -797,10 +798,10 @@ const styles = StyleSheet.create({
     fontFamily: "Barlow",
   },
   camera: {
-    flex: 20,
-    marginTop: 70,
-    width: "90%",
-    height: "90%",
+    alignSelf: 'center',
+    width: "80%",
+    height: "70%",
+    marginTop: "20%"
   },
   buttonContainer: {
     flex: 0.15,
@@ -809,5 +810,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: "flex-end",
     justifyContent: "center",
+    marginTop: "10%"
   },
 });
