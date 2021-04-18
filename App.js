@@ -29,7 +29,7 @@ function LoginScreen({ navigation }) {
   const secureLogin = async () => {
     try{
     await firebase.auth().signInWithEmailAndPassword(username, password);
-    navigation.navigate("Launch");
+    navigation.navigate("Home");
     }
     catch({message})
     {
@@ -311,7 +311,34 @@ function SignUpScreen({ navigation }) {
 }
 function CameraScreen({navigation})
 {
-
+  <View>
+  <View style = {{flex: 14}}></View>
+  <View style = {{flex: 1.2, flexDirection: "row"}}>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
+                  <Image
+                  source={require("./assets/tab1.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
+                  <Image
+                  source={require("./assets/tab2.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
+                  <Image
+                  source={require("./assets/tab3.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+            </View>
+            </View>
 }
 function AboutScreen({navigation})
 {
@@ -337,8 +364,34 @@ function AboutScreen({navigation})
             >
               Sign Out
             </Text>
+            <View style = {{flex: 8}}></View>
           </TouchableOpacity>
         <View style = {{flex: 1}}></View>
+        <View style = {{flex: 1.2, flexDirection: "row"}}>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
+                  <Image
+                  source={require("./assets/tab1.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
+                  <Image
+                  source={require("./assets/tab2.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
+                  <Image
+                  source={require("./assets/tab3.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+            </View>
       </View>
      
    )
@@ -431,8 +484,31 @@ function HomeScreen({navigation}) {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View style = {{flex: 1.2}}>
-              /////////////
+            <View style = {{flex: 0.8}}></View>
+            <View style = {{flex: 1.2, flexDirection: "row"}}>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
+                  <Image
+                  source={require("./assets/tab1.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
+                  <Image
+                  source={require("./assets/tab2.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
+              <View style = {{flex: 0.8}}></View>
+              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
+                  <Image
+                  source={require("./assets/tab3.png")}
+                  style={{flex: 0.5}}
+                  resizeMode="contain"
+                ></Image>
+              </TouchableOpacity>
             </View>
         </View>
       </TouchableWithoutFeedback>
@@ -529,6 +605,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "white",
     backgroundColor: "#add8e6",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  taskbarbutton: {
+    height:100,
+    width:100,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#add8e6",
+    backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
   },
