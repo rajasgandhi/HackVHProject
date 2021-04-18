@@ -14,25 +14,27 @@ import {
   Dimensions,
   TouchableOpacity,
   Keyboard,
+  AsyncStorage,
+  Alert
 } from "react-native";
+import { Camera } from "expo-camera";
 import AppLoading from "expo-app-loading";
 import { useFonts } from "expo-font";
+import CameraSucessScreen from "./CameraSuccessScreen";
 
 const entireScreenHeight = Dimensions.get("window").height;
 const rem = entireScreenHeight / 380;
 const Stack = createStackNavigator();
 
 function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const secureLogin = async () => {
-    try{
-    await firebase.auth().signInWithEmailAndPassword(username, password);
-    navigation.navigate("Home");
-    }
-    catch({message})
-    {
+    try {
+      await firebase.auth().signInWithEmailAndPassword(username, password);
+      navigation.navigate("Home");
+    } catch ({ message }) {
       alert(message);
     }
   };
@@ -167,18 +169,16 @@ function LoginScreen({ navigation }) {
 }
 
 function SignUpScreen({ navigation }) {
-  const [username, setUsername] = useState(0);
-  const [password, setPassword] = useState(0);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const signUp = async () => {
-   try{ 
-    await firebase.auth().createUserWithEmailAndPassword(username, password);
-    navigation.navigate("Login");
-  }
-  catch({message})
-  {
-    alert(message);
-  }
+    try {
+      await firebase.auth().createUserWithEmailAndPassword(username, password);
+      navigation.navigate("Login");
+    } catch ({ message }) {
+      alert(message);
+    }
   };
 
   return (
@@ -309,211 +309,374 @@ function SignUpScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
-function CameraScreen({navigation})
-{
-  <View>
-  <View style = {{flex: 14}}></View>
-  <View style = {{flex: 1.2, flexDirection: "row"}}>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
-                  <Image
-                  source={require("./assets/tab1.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
-                  <Image
-                  source={require("./assets/tab2.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
-                  <Image
-                  source={require("./assets/tab3.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-            </View>
-            </View>
-}
-function AboutScreen({navigation})
-{
-  const signOut = async () => {
-    try{ 
-     await firebase.auth().signOut();
-     navigation.navigate("Login");
-   }
-   catch({message})
-   {
-     alert(message);
-   }
-   };
+function CameraScreen({ navigation }) {
+  const [hasPermission, setHasPermission] = React.useState(false);
+  const [cameraReady, setCameraReady] = React.useState(false);
+  const [cameraRef, setCameraRef] = React.useState(null);
 
-   return(
-     <View>
-      <View style = {{flex: 1}}></View>
-        <View style = {{flex: 1}}></View>
-          <TouchableOpacity style={styles.loginbutton}>
-            <Text
-              style={{ color: "#add8e6", fontSize: 40 }}
-              onPress={() => signOut()}
-            >
-              Sign Out
-            </Text>
-            <View style = {{flex: 8}}></View>
-          </TouchableOpacity>
-        <View style = {{flex: 1}}></View>
-        <View style = {{flex: 1.2, flexDirection: "row"}}>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
-                  <Image
-                  source={require("./assets/tab1.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
-                  <Image
-                  source={require("./assets/tab2.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
-                  <Image
-                  source={require("./assets/tab3.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-            </View>
+  const [pictureAdded, setPictureAdded] = React.useState(false);
+  const [mostRecentPicture, setMostRecentPicture] = React.useState(null);
+
+  React.useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  if (hasPermission === false) {
+    return (
+      <Text>Please allow access to Camera to use the Scan Notes feature.</Text>
+    );
+  }
+  const handleImage = async (image) => {
+    try {
+      if (cameraRef) {
+        cameraRef.pausePreview();
+      }
+
+      const apiKey = "0569232a5d88957";
+      const b64Image = `data:image/jpg;base64,${image.base64}`;
+
+      const formData = new FormData();
+      formData.append("language", "eng");
+
+      formData.append("isOverlayRequired", false);
+      formData.append("scale", true);
+      formData.append("base64Image", b64Image);
+      formData.append("isTable", true);
+      formData.append("OCREngine", 2);
+
+      const ocrResp = await fetch("https://api.ocr.space/parse/image", {
+        method: "POST",
+        headers: {
+          apikey: apiKey,
+        },
+        body: formData,
+      });
+      const ocrRespJSON = await ocrResp.json();
+      let words = [];
+      for (
+        let i = 0;
+        i < ocrRespJSON.ParsedResults[0].TextOverlay.Lines.length;
+        i++
+      ) {
+        for (
+          let j = 0;
+          j < ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words.length;
+          j++
+        ) {
+          words.push(
+            ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words[j].WordText
+          );
+        }
+      }
+      //console.log(words);
+      const numAdded = words.length;
+      const imageAddStuff = {
+        noteimage: image.base64,
+        keywords: words,
+        numkeywords: numAdded,
+      };
+
+      const notes = await AsyncStorage.getItem("notes");
+      let note1 = JSON.parse(notes);
+      if (!note1) {
+        note1 = [];
+      }
+      note1.push(imageAddStuff);
+      await AsyncStorage.setItem("notes", JSON.stringify(note1))
+        .then(() => {
+          //console.log("It was saved successfully");
+        })
+        .catch(() => {
+          //console.log("There was an error saving the product");
+        });
+
+      //console.log(await AsyncStorage.getItem("notes"));
+      //alert("Notes Added!");
+      Alert.alert(
+        //This is title
+        "Notes Added!",
+        //This is body text
+        "Press OK or Cancel",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              //console.log("Yes Pressed");
+              setMostRecentPicture(image);
+              setPictureAdded(true);
+            },
+          },
+          {
+            text: "Cancel",
+            onPress: () => {
+              //console.log("No Pressed");
+              cameraRef.resumePreview();
+            },
+            style: "cancel",
+          },
+        ],
+        { cancelable: false }
+      );
+      //cameraRef.resumePreview();
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleOnPress = async () => {
+    if (cameraReady && cameraRef) {
+      try {
+        const image = await cameraRef.takePictureAsync({
+          base64: true,
+          // exif: true,
+          quality: 0.5,
+        });
+
+        await handleImage(image);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  if (pictureAdded) {
+    if (mostRecentPicture != null) {
+      return <CameraSuccessScreen image={mostRecentPicture} />;
+    }
+  }
+  return (
+    <View>
+        <Camera
+          style={styles.camera}
+          pictureSize="high"
+          onCameraReady={() => setCameraReady(true)}
+          ref={(ref) => {
+            setCameraRef(ref);
+          }}
+        ></Camera>
+      <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
+        <View
+          style={{
+            borderWidth: 2,
+            borderRadius: 50,
+            borderColor: "white",
+            height: 60,
+            width: 60,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "black",
+          }}
+        >
+          <Image style={{ width: 120, height: 77.5}} source={require("./assets/imagecapture.jpg")} />
+        </View>
+      </TouchableOpacity>
+      
+      <View style={{ flex: 1.2, flexDirection: "row" }}>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("Camera")}
+        >
+          <Image
+            source={require("./assets/tab1.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
+        <View style={{ flex: 0.8 }}></View>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Image
+            source={require("./assets/tab2.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
+        <View style={{ flex: 0.8 }}></View>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("About")}
+        >
+          <Image
+            source={require("./assets/tab3.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
       </View>
-     
-   )
+    </View>
+  );
+}
+function AboutScreen({ navigation }) {
+  const signOut = async () => {
+    try {
+      await firebase.auth().signOut();
+      navigation.navigate("Login");
+    } catch ({ message }) {
+      alert(message);
+    }
+  };
+
+  return (
+    <View>
+      <View style={{ flex: 1 }}></View>
+      <View style={{ flex: 1 }}></View>
+      <TouchableOpacity style={styles.loginbutton}>
+        <Text
+          style={{ color: "#add8e6", fontSize: 40 }}
+          onPress={() => signOut()}
+        >
+          Sign Out
+        </Text>
+        <View style={{ flex: 8 }}></View>
+      </TouchableOpacity>
+      <View style={{ flex: 1 }}></View>
+      <View style={{ flex: 1.2, flexDirection: "row" }}>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("Camera")}
+        >
+          <Image
+            source={require("./assets/tab1.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
+        <View style={{ flex: 0.8 }}></View>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Image
+            source={require("./assets/tab2.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
+        <View style={{ flex: 0.8 }}></View>
+        <TouchableOpacity
+          style={styles.taskbarbutton}
+          onPress={() => navigation.navigate("About")}
+        >
+          <Image
+            source={require("./assets/tab3.png")}
+            style={{ flex: 0.5 }}
+            resizeMode="contain"
+          ></Image>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }
 
-function HomeScreen({navigation}) {
-  const [search, setSearch] = useState(0);
-  
+function HomeScreen({ navigation }) {
+  const [search, setSearch] = useState("");
+
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <TouchableWithoutFeedback
         onPress={() => Keyboard.dismiss()}
-        accessible={false}>
-        
+        accessible={false}
+      >
         <View style={styles.container}>
           <View style={{ flex: 0.2 }}></View>
-            <View
-              style={{
-                flex: 1,
-                width: "100%",
-                height: "100%",
-                alignItems: "center",
-                backgroundColor: "white",
-              }}
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              height: "100%",
+              alignItems: "center",
+              backgroundColor: "white",
+            }}
+          >
+            <View style={styles.textborder}>
+              <TextInput
+                style={styles.textinput}
+                autoCapitalize="none"
+                autoCompleteType="off"
+                placeholder="Search"
+                keyboardType="ascii-capable"
+                onChangeText={(value) => setSearch(value)}
+                value={search}
+              ></TextInput>
+            </View>
+          </View>
+          <View style={{ flex: 0.5 }}></View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>MATH</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>SCIENCE</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>
+                SOCIAL STUDIES
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>ENGLISH</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>LANGUAGE</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <TouchableOpacity style={styles.classbutton}>
+              <Text style={{ color: "white", fontSize: 40 }}>ELECTIVE</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 0.8 }}></View>
+          <View style={{ flex: 1.2, flexDirection: "row" }}>
+            <TouchableOpacity
+              style={styles.taskbarbutton}
+              onPress={() => navigation.navigate("Camera")}
             >
-              <View style={styles.textborder}>
-                <TextInput
-                  style={styles.textinput}
-                  autoCapitalize="none"
-                  autoCompleteType="off"
-                  placeholder="Search"
-                  keyboardType="ascii-capable"
-                  onChangeText={(value) => setSearch(value)}
-                  value={search}
-                ></TextInput>
-              </View>
-            </View>
-            <View style = {{flex: 0.5}}></View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  MATH
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  SCIENCE
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  SOCIAL STUDIES
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  ENGLISH
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  LANGUAGE
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 1.2}}>
-              <TouchableOpacity style={styles.classbutton}>
-                <Text
-                  style={{ color: "white", fontSize: 40 }}
-                >
-                  ELECTIVE
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style = {{flex: 0.8}}></View>
-            <View style = {{flex: 1.2, flexDirection: "row"}}>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Camera")}>
-                  <Image
-                  source={require("./assets/tab1.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("Home")}>
-                  <Image
-                  source={require("./assets/tab2.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-              <View style = {{flex: 0.8}}></View>
-              <TouchableOpacity style={styles.taskbarbutton} onPress={() => navigation.navigate("About")}>
-                  <Image
-                  source={require("./assets/tab3.png")}
-                  style={{flex: 0.5}}
-                  resizeMode="contain"
-                ></Image>
-              </TouchableOpacity>
-            </View>
+              <Image
+                source={require("./assets/tab1.png")}
+                style={{ flex: 0.5 }}
+                resizeMode="contain"
+              ></Image>
+            </TouchableOpacity>
+            <View style={{ flex: 0.8 }}></View>
+            <TouchableOpacity
+              style={styles.taskbarbutton}
+              onPress={() => navigation.navigate("Home")}
+            >
+              <Image
+                source={require("./assets/tab2.png")}
+                style={{ flex: 0.5 }}
+                resizeMode="contain"
+              ></Image>
+            </TouchableOpacity>
+            <View style={{ flex: 0.8 }}></View>
+            <TouchableOpacity
+              style={styles.taskbarbutton}
+              onPress={() => navigation.navigate("About")}
+            >
+              <Image
+                source={require("./assets/tab3.png")}
+                style={{ flex: 0.5 }}
+                resizeMode="contain"
+              ></Image>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-    
   );
 }
 
@@ -600,7 +763,7 @@ const styles = StyleSheet.create({
   },
   classbutton: {
     height: "80%",
-    width:340,
+    width: 340,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "white",
@@ -609,8 +772,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   taskbarbutton: {
-    height:100,
-    width:100,
+    height: 100,
+    width: 100,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#add8e6",
@@ -632,5 +795,19 @@ const styles = StyleSheet.create({
     color: "#0000FF",
     fontWeight: "bold",
     fontFamily: "Barlow",
+  },
+  camera: {
+    flex: 20,
+    marginTop: 70,
+    width: "90%",
+    height: "90%",
+  },
+  buttonContainer: {
+    flex: 0.15,
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    marginBottom: 30,
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
 });
