@@ -17,7 +17,7 @@ export default function App() {
   const [cameraReady, setCameraReady] = React.useState(false);
   const [cameraRef, setCameraRef] = React.useState(null);
 
-  //const [notesAdded, setNotesAdded] = React.useState(false);
+  const [pictureAdded, setPictureAdded] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -100,21 +100,22 @@ export default function App() {
       //console.log(await AsyncStorage.getItem("notes"));
       //alert("Notes Added!");
       Alert.alert(
+        //This is title
         "Notes Added!",
+        //This is body text
         "Press OK or Cancel",
         [
           {
             text: "OK",
             onPress: () => {
-              console.log("Yes Pressed");
-              //return <CameraSucessScreen />;
-              //setNotesAdded(true);
+              //console.log("Yes Pressed");
+              setPictureAdded(true);
             },
           },
           {
             text: "Cancel",
             onPress: () => {
-              console.log("No Pressed");
+              //console.log("No Pressed");
               cameraRef.resumePreview();
             },
             style: "cancel",
@@ -122,6 +123,7 @@ export default function App() {
         ],
         { cancelable: false }
       );
+      //cameraRef.resumePreview();
     } catch (err) {
       console.warn(err);
     }
@@ -143,51 +145,45 @@ export default function App() {
     }
   };
 
-  //if (notesAdded) {
-  //return <CameraSucessScreen />;
-  //}
+  if (pictureAdded) {
+    return <CameraSucessScreen />;
+  }
+
   return (
     <View style={styles.container}>
-      <View>
       <Camera
-          onCameraReady={() => setCameraReady(true)}
-          ref={(ref) => {
-            setCameraRef(ref);
-            //cameraRef.resumePreview();
+        onCameraReady={() => setCameraReady(true)}
+        ref={(ref) => {
+          setCameraRef(ref);
+        }}
+        style={styles.camera}
+      ></Camera>
+      <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
+        <View
+          style={{
+            borderWidth: 2,
+            borderRadius: 50,
+            borderColor: "white",
+            height: 50,
+            width: 50,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "black",
           }}
-          style={styles.camera}
-        ></Camera>
-
-        <TouchableOpacity
-          style={styles.buttonContainer}
-          onPress={handleOnPress}
         >
           <View
             style={{
               borderWidth: 2,
               borderRadius: 50,
               borderColor: "white",
-              height: 50,
-              width: 50,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              height: 40,
+              width: 40,
               backgroundColor: "black",
             }}
-          >
-            <View
-              style={{
-                borderWidth: 2,
-                borderRadius: 50,
-                borderColor: "white",
-                height: 40,
-                width: 40,
-                backgroundColor: "black",
-              }}
-            ></View>
-          </View>
-        </TouchableOpacity>
-      </View>
+          ></View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
