@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Camera } from "expo-camera";
 import {
+  Image,
   Alert,
   StyleSheet,
   Text,
@@ -174,7 +175,12 @@ export default function App() {
             backgroundColor: "black",
           }}
         >
-          <View
+          <Image style={{ width: 120, height: 77.5}} source={require("./assets/imagecapture.jpg")} />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+} /*<View
             style={{
               borderWidth: 2,
               borderRadius: 50,
@@ -183,12 +189,7 @@ export default function App() {
               width: 50,
               backgroundColor: "black",
             }}
-          ></View>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
+          ></View>*/
 
 const styles = StyleSheet.create({
   container: {
