@@ -464,87 +464,93 @@ function MainScreen() {
   }
 
   return (
-    <TabBar>
-      <TabBar.Item
-        icon={require("./assets/tab1.png")}
-        selectedIcon={require("./assets/tab1.png")}
-        title="Home"
-      >
-        <View style={styles.textContent}>
-          <KeyboardAvoidingView behavior="padding" style={styles.container}>
-            <TouchableWithoutFeedback
-              onPress={() => Keyboard.dismiss()}
-              accessible={false}
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <TouchableWithoutFeedback
+        onPress={() => Keyboard.dismiss()}
+        accessible={false}>
+        <View style={styles.container}>
+          <View style={{ flex: 0.2 }}></View>
+            <View
+              style={{
+                flex: 1,
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}
             >
-              <View style={styles.container}>
-                <View style={{ flex: 0.5 }}></View>
-                <View style={{ flex: 1, width: "90%", alignItems: "center" }}>
-                  <View style={styles.textborder}>
-                    <TextInput
-                      style={styles.textinput}
-                      autoCapitalize="none"
-                      autoCompleteType="off"
-                      placeholder="Search"
-                      keyboardType="ascii-capable"
-                      onChangeText={(value) => setSearch(value)}
-                      value={search}
-                    />
-                  </View>
-                </View>
-                <View
-                  style={{
-                    flex: 4,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <View style={{ flex: 1 }}>
-                    <View style></View>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text>no</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text>no</Text>
-                  </View>
-                </View>
+              <View style={styles.textborder}>
+                <TextInput
+                  style={styles.textinput}
+                  autoCapitalize="none"
+                  autoCompleteType="off"
+                  placeholder="Search"
+                  keyboardType="ascii-capable"
+                  onChangeText={(value) => setSearch(value)}
+                  value={search}
+                ></TextInput>
               </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
+            </View>
+            <View style = {{flex: 0.5}}></View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  MATH
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  SCIENCE
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  SOCIAL STUDIES
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  ENGLISH
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  LANGUAGE
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}>
+              <TouchableOpacity style={styles.classbutton}>
+                <Text
+                  style={{ color: "white", fontSize: 40 }}
+                >
+                  ELECTIVE
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style = {{flex: 1.2}}></View>
         </View>
-      </TabBar.Item>
-      <TabBar.Item>
-        <View>
-
-        <Camera
-            onCameraReady={() => setCameraReady(true)}
-            ref={(ref) => {
-              setCameraRef(ref);
-            }}
-            style={styles.camera}
-          ></Camera>
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={handleOnPress}
-          >
-            <Image
-              style={{ width: 120, height: 77.5 }}
-              source={require("./assets/imagecapture.jpg")}
-            />
-          </TouchableOpacity>
-        </View>
-      </TabBar.Item>
-      <TabBar.Item
-        icon={require("./assets/tab3.png")}
-        selectedIcon={require("./assets/tab3.png")}
-        title="Me"
-      >
-        <View style={styles.textContent}>
-          <Text style={{ fontSize: 18 }}>Me</Text>
-        </View>
-      </TabBar.Item>
-    </TabBar>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+    
   );
 }
 
@@ -628,6 +634,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#add8e6",
     backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  classbutton: {
+    height: "80%",
+    width:340,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "white",
+    backgroundColor: "#add8e6",
     justifyContent: "center",
     alignItems: "center",
   },
