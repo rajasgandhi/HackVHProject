@@ -1,7 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import TabBar from "@mindinventory/react-native-tab-bar-interaction";
+import TabBar from 'react-native-nav-tabbar';
 import firebase from "firebase";
-import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState } from "react";
@@ -25,12 +24,18 @@ const rem = entireScreenHeight / 380;
 const Stack = createStackNavigator();
 
 function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState(0);
-  const [password, setPassword] = useState(0);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const secureLogin = async () => {
+    try{
     await firebase.auth().signInWithEmailAndPassword(username, password);
-    navigation.navigate("Home");
+    navigation.navigate("Launch");
+    }
+    catch({message})
+    {
+      alert(message);
+    }
   };
 
   return (
@@ -76,7 +81,7 @@ function LoginScreen({ navigation }) {
                 placeholder="Email"
                 keyboardType="ascii-capable"
                 onChangeText={(value) => setUsername(value)}
-                value={username.toString()}
+                value={username}
               ></TextInput>
             </View>
           </View>
@@ -167,8 +172,14 @@ function SignUpScreen({ navigation }) {
   const [password, setPassword] = useState(0);
 
   const signUp = async () => {
+   try{ 
     await firebase.auth().createUserWithEmailAndPassword(username, password);
     navigation.navigate("Login");
+  }
+  catch({message})
+  {
+    alert(message);
+  }
   };
 
   return (
@@ -213,7 +224,7 @@ function SignUpScreen({ navigation }) {
                 autoCompleteType="off"
                 placeholder="Email"
                 keyboardType="ascii-capable"
-                onChangeText={(value) => setUsername(value)}
+                onChangeText={(value) => setUsername(value.toString())}
                 value={username}
               ></TextInput>
             </View>
@@ -300,116 +311,48 @@ function SignUpScreen({ navigation }) {
   );
 }
 
-function HomeScreen() {
-  return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
-      <TouchableWithoutFeedback
-        onPress={() => Keyboard.dismiss()}
-        accessible={false}
-      >
-        <View style={styles.container}>
-          <View style={{ flex: 0.3 }}></View>
-          <View
-            style={{
-              flex: 0.5,
-              width: "100%",
-              alignItems: "center",
-              backgroundColor: "white",
-            }}
-          >
-            <Text style={styles.title}>Home</Text>
-          </View>
-          <View style={{ flex: 6.0 }}></View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-  );
-}
-
-function CameraScreen() {
-  return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
-      <TouchableWithoutFeedback
-        onPress={() => Keyboard.dismiss()}
-        accessible={false}
-      >
-        <View style={styles.container}>
-          <View style={{ flex: 0.3 }}></View>
-          <View
-            style={{
-              flex: 0.5,
-              width: "100%",
-              alignItems: "center",
-              backgroundColor: "white",
-            }}
-          >
-            <Text style={styles.title}>Home</Text>
-          </View>
-          <View style={{ flex: 5.0 }}></View>
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              height: "100%",
-              alignItems: "center",
-              backgroundColor: "white",
-            }}
-          ></View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-  );
-}
-
-function SettingScreen() {
+function MainScreen() {
   const signOut = async () => {
+   try{ 
     await firebase.auth().signOut();
     navigation.navigate("Login");
+  }
+  catch({message})
+  {
+    alert(message);
+  }
   };
-
+  
   return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
-      <TouchableWithoutFeedback
-        onPress={() => Keyboard.dismiss()}
-        accessible={false}
-      >
-        <View style={styles.container}>
-          <View style={{ flex: 0.3 }}></View>
-          <View
-            style={{
-              flex: 0.5,
-              width: "100%",
-              alignItems: "center",
-              backgroundColor: "white",
-            }}
-          >
-            <Text style={styles.title}>Home</Text>
-          </View>
-          <View style={{ flex: 5.0 }}></View>
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              height: "100%",
-              alignItems: "center",
-              backgroundColor: "white",
-            }}
-          >
-            <TouchableOpacity>
-              <View style={styles.textborder}>
-                <Text
-                  style={styles.loginbutton}
-                  onChangeText={(value) => setUsername(value)}
-                  value={username}
-                >
-                  Sign Out
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+    <TabBar>
+    <TabBar.Item
+        icon={require('./assets/tab2.png')}
+        selectedIcon={require('./assets/tab2.png')}
+        title="Home"
+    >
+     <View>
+        
+            <View>
+              <Text style={{fontSize: 25}}>Camera</Text>
+            </View>
+          
+      </View>
+    </TabBar.Item>
+    <TabBar.Item>
+        <View style={styles.textContent}>
+            <Text style={{fontSize: 18}}>Camera</Text>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </TabBar.Item>
+    <TabBar.Item
+        icon={require('./assets/tab3.png')}
+        selectedIcon={require('./assets/tab3.png')}
+        title="Settings"
+    >
+        <View style={styles.textContent}>
+            <Text style={{fontSize: 18}}>Settings</Text>
+        </View>
+  </TabBar.Item>
+</TabBar>
   );
 }
 
@@ -439,9 +382,7 @@ export default function App() {
         <Stack.Navigator>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Sign Up" component={SignUpScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Camera" component={CameraScreen} />
-          <Stack.Screen name="Settings" component={SettingScreen} />
+          <Stack.Screen name="Launch" component={MainScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     );
