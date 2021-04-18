@@ -18,6 +18,8 @@ import {
 } from "react-native";
 import AppLoading from "expo-app-loading";
 import { useFonts } from "expo-font";
+import { Camera } from "expo-camera";
+import CameraSucessScreen from "./CameraSuccessScreen";
 
 const entireScreenHeight = Dimensions.get("window").height;
 const rem = entireScreenHeight / 380;
