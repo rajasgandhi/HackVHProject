@@ -15,12 +15,13 @@ import {
   TouchableOpacity,
   Keyboard,
   AsyncStorage,
-  Alert
+  Alert,
 } from "react-native";
 import { Camera } from "expo-camera";
 import AppLoading from "expo-app-loading";
 import { useFonts } from "expo-font";
 import CameraSuccessScreen from "./CameraSuccessScreen";
+import ScienceScreen from "./ScienceScreen";
 
 const entireScreenHeight = Dimensions.get("window").height;
 const rem = entireScreenHeight / 380;
@@ -444,20 +445,27 @@ function CameraScreen({ navigation }) {
 
   if (pictureAdded) {
     if (mostRecentPicture != null) {
-      return <CameraSuccessScreen  image={mostRecentPicture} navigation={navigation} />;
+      return (
+        <CameraSuccessScreen
+          image={mostRecentPicture}
+          navigation={navigation}
+        />
+      );
     }
   }
   return (
     <View>
-        <Camera
-          style={styles.camera}
-          pictureSize="high"
-          type={Camera.Constants.Type.back}
-          onCameraReady={() => {setCameraReady(true)}}
-          ref={(ref) => {
-            setCameraRef(ref);
-          }}
-        />
+      <Camera
+        style={styles.camera}
+        pictureSize="high"
+        type={Camera.Constants.Type.back}
+        onCameraReady={() => {
+          setCameraReady(true);
+        }}
+        ref={(ref) => {
+          setCameraRef(ref);
+        }}
+      />
       <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
         <View
           style={{
@@ -472,10 +480,13 @@ function CameraScreen({ navigation }) {
             backgroundColor: "black",
           }}
         >
-          <Image style={{ width: 120, height: 77.5}} source={require("./assets/imagecapture.jpg")} />
+          <Image
+            style={{ width: 120, height: 77.5 }}
+            source={require("./assets/imagecapture.jpg")}
+          />
         </View>
       </TouchableOpacity>
-      
+
       <View style={{ flex: 1.2, flexDirection: "row" }}>
         <TouchableOpacity
           style={styles.taskbarbutton}
@@ -577,6 +588,11 @@ function AboutScreen({ navigation }) {
 
 function HomeScreen({ navigation }) {
   const [search, setSearch] = useState("");
+  const [science, setScience] = useState(false);
+
+  if (science) {
+    return <ScienceScreen />;
+  }
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
@@ -608,13 +624,19 @@ function HomeScreen({ navigation }) {
             </View>
           </View>
           <View style={{ flex: 0.5 }}></View>
+
           <View style={{ flex: 1.2 }}>
             <TouchableOpacity style={styles.classbutton}>
               <Text style={{ color: "white", fontSize: 40 }}>MATH</Text>
             </TouchableOpacity>
           </View>
           <View style={{ flex: 1.2 }}>
-            <TouchableOpacity style={styles.classbutton}>
+            <TouchableOpacity
+              onPress={() => {
+                setScience(true);
+              }}
+              style={styles.classbutton}
+            >
               <Text style={{ color: "white", fontSize: 40 }}>SCIENCE</Text>
             </TouchableOpacity>
           </View>
@@ -640,8 +662,19 @@ function HomeScreen({ navigation }) {
               <Text style={{ color: "white", fontSize: 40 }}>ELECTIVE</Text>
             </TouchableOpacity>
           </View>
+
           <View style={{ flex: 0.8 }}></View>
-          <View style={{ flex: 1.2, flexDirection: "row", justifyContent: "center", bottom: 0, position: "absolute", width: "100%", alignContent: "center" }}>
+          <View
+            style={{
+              flex: 1.2,
+              flexDirection: "row",
+              justifyContent: "center",
+              bottom: 0,
+              position: "absolute",
+              width: "100%",
+              alignContent: "center",
+            }}
+          >
             <TouchableOpacity
               style={styles.taskbarbutton}
               onPress={() => navigation.navigate("Camera")}
@@ -798,10 +831,10 @@ const styles = StyleSheet.create({
     fontFamily: "Barlow",
   },
   camera: {
-    alignSelf: 'center',
+    alignSelf: "center",
     width: "80%",
     height: "70%",
-    marginTop: "20%"
+    marginTop: "20%",
   },
   buttonContainer: {
     flex: 0.15,
@@ -810,6 +843,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: "flex-end",
     justifyContent: "center",
-    marginTop: "10%"
+    marginTop: "10%",
   },
 });

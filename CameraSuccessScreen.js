@@ -13,7 +13,6 @@ import {
 } from "react-native";
 
 import DropDownPicker from "react-native-dropdown-picker";
-import App from "./App";
 //import { AsyncStorage } from "@react-native-community/async-storage";
 
 export default function CameraSucessScreen({ image, navigation }) {
