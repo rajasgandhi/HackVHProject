@@ -1,12 +1,20 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Camera } from "expo-camera";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  AsyncStorage,
+} from "react-native";
+//import { AsyncStorage } from "@react-native-community/async-storage";
 
 export default function App() {
   const [hasPermission, setHasPermission] = React.useState(false);
   const [cameraReady, setCameraReady] = React.useState(false);
   const [cameraRef, setCameraRef] = React.useState(null);
+
   React.useEffect(() => {
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
@@ -16,16 +24,15 @@ export default function App() {
 
   if (hasPermission === false) {
     return (
-      <Text>
-        Please allow access to Camera to use the Scan Receipt feature.
-      </Text>
+      <Text>Please allow access to Camera to use the Scan Notes feature.</Text>
     );
   }
   const handleImage = async (image) => {
     try {
       if (cameraRef) {
-        //cameraRef.pausePreview();
+        cameraRef.pausePreview();
       }
+
       const apiKey = "0569232a5d88957";
       const b64Image = `data:image/jpg;base64,${image.base64}`;
 
@@ -46,8 +53,49 @@ export default function App() {
         body: formData,
       });
       const ocrRespJSON = await ocrResp.json();
+      let words = [];
+      for (
+        let i = 0;
+        i < ocrRespJSON.ParsedResults[0].TextOverlay.Lines.length;
+        i++
+      ) {
+        for (
+          let j = 0;
+          j < ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words.length;
+          j++
+        ) {
+          words.push(
+            ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words[j].WordText
+          );
+        }
+      }
+      //console.log(words);
+      const numAdded = words.length;
+      const imageAddStuff = {
+        noteimage: image.base64,
+        keywords: words,
+        numkeywords: numAdded,
+      };
 
-      console.log(ocrRespJSON);
+      //await AsyncStorage.setItem("notes", "");
+
+      const notes = await AsyncStorage.getItem("notes");
+      let note1 = JSON.parse(notes);
+      if (!note1) {
+        note1 = [];
+      }
+      note1.push(imageAddStuff);
+      await AsyncStorage.setItem("notes", JSON.stringify(note1))
+        .then(() => {
+          //console.log("It was saved successfully");
+        })
+        .catch(() => {
+          //console.log("There was an error saving the product");
+        });
+
+      //console.log(await AsyncStorage.getItem("notes"));
+      alert("Notes Added!");
+      cameraRef.resumePreview();
     } catch (err) {
       console.warn(err);
     }
@@ -59,9 +107,9 @@ export default function App() {
         const image = await cameraRef.takePictureAsync({
           base64: true,
           // exif: true,
-          quality: 0.3,
+          quality: 0.5,
         });
-        //console.log(image);
+
         await handleImage(image);
       } catch (err) {
         console.log(err);
@@ -77,36 +125,33 @@ export default function App() {
           setCameraRef(ref);
         }}
         style={styles.camera}
-      >
-        <TouchableOpacity
-          style={styles.buttonContainer}
-          onPress={handleOnPress}
+      ></Camera>
+      <TouchableOpacity style={styles.buttonContainer} onPress={handleOnPress}>
+        <View
+          style={{
+            borderWidth: 2,
+            borderRadius: 50,
+            borderColor: "white",
+            height: 50,
+            width: 50,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "black",
+          }}
         >
           <View
             style={{
               borderWidth: 2,
               borderRadius: 50,
               borderColor: "white",
-              height: 50,
-              width: 50,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              height: 40,
+              width: 40,
+              backgroundColor: "black",
             }}
-          >
-            <View
-              style={{
-                borderWidth: 2,
-                borderRadius: 50,
-                borderColor: "white",
-                height: 40,
-                width: 40,
-                backgroundColor: "white",
-              }}
-            ></View>
-          </View>
-        </TouchableOpacity>
-      </Camera>
+          ></View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -119,14 +164,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   camera: {
+    flex: 1.25,
+    marginTop: 70,
     width: "90%",
     height: "90%",
   },
   buttonContainer: {
-    flex: 1,
+    flex: 0.15,
     backgroundColor: "transparent",
     flexDirection: "row",
-    margin: 20,
+    marginBottom: 30,
     alignItems: "flex-end",
     justifyContent: "center",
   },
