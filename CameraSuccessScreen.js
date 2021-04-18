@@ -16,7 +16,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import App from "./App";
 //import { AsyncStorage } from "@react-native-community/async-storage";
 
-export default function CameraSucessScreen({ image }) {
+export default function CameraSuccessScreen({ image }) {
   const [backPress, setBackPress] = useState(false);
   const [finishPress, setFinishPress] = useState(false);
   const [selectedValue, setSelectedValue] = useState("English");

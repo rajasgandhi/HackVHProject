@@ -1,41 +1,41 @@
 import { StatusBar } from "expo-status-bar";
-import TabBar from 'react-native-nav-tabbar';
+import TabBar from "react-native-nav-tabbar";
 import firebase from "firebase";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, useIsFocused } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState } from "react";
 import {
   Text,
   View,
   StyleSheet,
-  Image,
   TextInput,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Dimensions,
   TouchableOpacity,
   Keyboard,
+  Image,
+  Alert,
+  AsyncStorage,
 } from "react-native";
 import AppLoading from "expo-app-loading";
 import { useFonts } from "expo-font";
 import { Camera } from "expo-camera";
-import CameraSucessScreen from "./CameraSuccessScreen";
+import CameraSuccessScreen from "./CameraSuccessScreen";
 
 const entireScreenHeight = Dimensions.get("window").height;
 const rem = entireScreenHeight / 380;
 const Stack = createStackNavigator();
 
 function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const secureLogin = async () => {
-    try{
-    await firebase.auth().signInWithEmailAndPassword(username, password);
-    navigation.navigate("Launch");
-    }
-    catch({message})
-    {
+    try {
+      await firebase.auth().signInWithEmailAndPassword(username, password);
+      navigation.navigate("Launch");
+    } catch ({ message }) {
       alert(message);
     }
   };
@@ -174,14 +174,12 @@ function SignUpScreen({ navigation }) {
   const [password, setPassword] = useState(0);
 
   const signUp = async () => {
-   try{ 
-    await firebase.auth().createUserWithEmailAndPassword(username, password);
-    navigation.navigate("Login");
-  }
-  catch({message})
-  {
-    alert(message);
-  }
+    try {
+      await firebase.auth().createUserWithEmailAndPassword(username, password);
+      navigation.navigate("Login");
+    } catch ({ message }) {
+      alert(message);
+    }
   };
 
   return (
@@ -314,75 +312,239 @@ function SignUpScreen({ navigation }) {
 }
 
 function MainScreen() {
-  const [search, setSearch] = useState(0);
+  const [hasPermission, setHasPermission] = React.useState(false);
+  const [cameraReady, setCameraReady] = React.useState(false);
+  const [cameraRef, setCameraRef] = React.useState(null);
+
+  const [pictureAdded, setPictureAdded] = React.useState(false);
+  const [mostRecentPicture, setMostRecentPicture] = React.useState(null);
+  const [search, setSearch] = useState("");
+  const isFocused = useIsFocused();
+
   const signOut = async () => {
-   try{ 
-    await firebase.auth().signOut();
-    navigation.navigate("Login");
-  }
-  catch({message})
-  {
-    alert(message);
-  }
+    try {
+      await firebase.auth().signOut();
+      navigation.navigate("Login");
+    } catch ({ message }) {
+      alert(message);
+    }
   };
-  
+
+  React.useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  if (hasPermission === false) {
+    return (
+      <Text>Please allow access to Camera to use the Scan Notes feature.</Text>
+    );
+  }
+  const handleImage = async (image) => {
+    try {
+      if (cameraRef) {
+        cameraRef.pausePreview();
+      }
+
+      const apiKey = "0569232a5d88957";
+      const b64Image = `data:image/jpg;base64,${image.base64}`;
+
+      const formData = new FormData();
+      formData.append("language", "eng");
+
+      formData.append("isOverlayRequired", false);
+      formData.append("scale", true);
+      formData.append("base64Image", b64Image);
+      formData.append("isTable", true);
+      formData.append("OCREngine", 2);
+
+      const ocrResp = await fetch("https://api.ocr.space/parse/image", {
+        method: "POST",
+        headers: {
+          apikey: apiKey,
+        },
+        body: formData,
+      });
+      const ocrRespJSON = await ocrResp.json();
+      let words = [];
+      for (
+        let i = 0;
+        i < ocrRespJSON.ParsedResults[0].TextOverlay.Lines.length;
+        i++
+      ) {
+        for (
+          let j = 0;
+          j < ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words.length;
+          j++
+        ) {
+          words.push(
+            ocrRespJSON.ParsedResults[0].TextOverlay.Lines[i].Words[j].WordText
+          );
+        }
+      }
+      //console.log(words);
+      const numAdded = words.length;
+      const imageAddStuff = {
+        noteimage: image.base64,
+        keywords: words,
+        numkeywords: numAdded,
+      };
+
+      //await AsyncStorage.setItem("notes", "");
+
+      const notes = await AsyncStorage.getItem("notes");
+      let note1 = JSON.parse(notes);
+      if (!note1) {
+        note1 = [];
+      }
+      note1.push(imageAddStuff);
+      await AsyncStorage.setItem("notes", JSON.stringify(note1))
+        .then(() => {
+          //console.log("It was saved successfully");
+        })
+        .catch(() => {
+          //console.log("There was an error saving the product");
+        });
+
+      //console.log(await AsyncStorage.getItem("notes"));
+      //alert("Notes Added!");
+      Alert.alert(
+        //This is title
+        "Notes Added!",
+        //This is body text
+        "Press OK or Cancel",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              //console.log("Yes Pressed");
+              setMostRecentPicture(image);
+              setPictureAdded(true);
+            },
+          },
+          {
+            text: "Cancel",
+            onPress: () => {
+              //console.log("No Pressed");
+              cameraRef.resumePreview();
+            },
+            style: "cancel",
+          },
+        ],
+        { cancelable: false }
+      );
+      //cameraRef.resumePreview();
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const handleOnPress = async () => {
+    if (cameraReady && cameraRef && await Camera.isAvailableAsync()) {
+      try {
+        const image = await cameraRef.takePictureAsync({
+          base64: true,
+          // exif: true,
+          quality: 0.5,
+        });
+
+        await handleImage(image);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  if (pictureAdded) {
+    if (mostRecentPicture == null) {
+      return <CameraSuccessScreen image={mostRecentPicture} />;
+    }
+  }
+
   return (
     <TabBar>
-    <TabBar.Item
-        icon={require('./assets/tab1.png')}
-        selectedIcon={require('./assets/tab1.png')}
+      <TabBar.Item
+        icon={require("./assets/tab1.png")}
+        selectedIcon={require("./assets/tab1.png")}
         title="Home"
-    >
+      >
         <View style={styles.textContent}>
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
-      <View style={styles.container}>
-        <View style={{ flex: 0.5 }}></View>
-        <View style={{ flex: 1, width: '90%', alignItems: 'center',}}>
-          <View style={styles.textborder}>
-              <TextInput
-                style={styles.textinput}
-                autoCapitalize='none'
-                autoCompleteType='off'
-                placeholder="Search"
-                keyboardType='ascii-capable'
-                onChangeText={(value) => setSearch(value)}
-                value={search}
-              /></View>
+          <KeyboardAvoidingView behavior="padding" style={styles.container}>
+            <TouchableWithoutFeedback
+              onPress={() => Keyboard.dismiss()}
+              accessible={false}
+            >
+              <View style={styles.container}>
+                <View style={{ flex: 0.5 }}></View>
+                <View style={{ flex: 1, width: "90%", alignItems: "center" }}>
+                  <View style={styles.textborder}>
+                    <TextInput
+                      style={styles.textinput}
+                      autoCapitalize="none"
+                      autoCompleteType="off"
+                      placeholder="Search"
+                      keyboardType="ascii-capable"
+                      onChangeText={(value) => setSearch(value)}
+                      value={search}
+                    />
+                  </View>
+                </View>
+                <View
+                  style={{
+                    flex: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <View style></View>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text>no</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text>no</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
         </View>
-        <View style={{ flex: 4, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-          <View style={{flex:1}}>
-            <View style></View>
-          </View>
-          <View style={{flex:1}}>
-          <Text>no</Text>
-          </View>
-          <View style={{flex:1}}>
-          <Text>no</Text>
-          </View>
+      </TabBar.Item>
+      <TabBar.Item>
+        <View>
+
+        <Camera
+            onCameraReady={() => setCameraReady(true)}
+            ref={(ref) => {
+              setCameraRef(ref);
+            }}
+            style={styles.camera}
+          ></Camera>
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={handleOnPress}
+          >
+            <Image
+              style={{ width: 120, height: 77.5 }}
+              source={require("./assets/imagecapture.jpg")}
+            />
+          </TouchableOpacity>
         </View>
-        
-      </View>
-    </TouchableWithoutFeedback>
-  </KeyboardAvoidingView >
-        </View>
-    </TabBar.Item>
-    <TabBar.Item>
-        <View style={styles.textContent}>
-        
-        </View>
-    </TabBar.Item>
-    <TabBar.Item
-        icon={require('./assets/tab3.png')}
-        selectedIcon={require('./assets/tab3.png')}
+      </TabBar.Item>
+      <TabBar.Item
+        icon={require("./assets/tab3.png")}
+        selectedIcon={require("./assets/tab3.png")}
         title="Me"
-    >
+      >
         <View style={styles.textContent}>
-            <Text style={{fontSize: 18}}>Me</Text>
+          <Text style={{ fontSize: 18 }}>Me</Text>
         </View>
-  </TabBar.Item>
-</TabBar>
-    
+      </TabBar.Item>
+    </TabBar>
   );
 }
 
@@ -412,7 +574,11 @@ export default function App() {
         <Stack.Navigator>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Sign Up" component={SignUpScreen} />
-          <Stack.Screen name="Launch" component={MainScreen} />
+          <Stack.Screen
+            name="Launch"
+            options={{ unmountOnBlur: true }}
+            component={MainScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -479,5 +645,19 @@ const styles = StyleSheet.create({
     color: "#0000FF",
     fontWeight: "bold",
     fontFamily: "Barlow",
+  },
+  camera: {
+    flex: 1.25,
+    marginTop: 100,
+    width: "20%",
+    height: "20%",
+  },
+  buttonContainer: {
+    flex: 0.15,
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    marginBottom: 30,
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
 });
